@@ -1,0 +1,130 @@
+y11=1/0.03j;
+y12=-1/(1.05*0.03j);
+y13=0;
+y14=0;
+y15=0;
+y16=0;
+y21=y12;
+y22=0.5j+1/(0.06+0.025j)+1/(0.04+0.25j)+1/((1.05^2)*0.03j);
+y23=-1/(0.06+0.025j);
+y24=0;
+y25=-1/(0.04+0.25j);
+y26=0;
+y31=y13;
+y32=y23;
+y33=0.5j+1/(0.06+0.025j)+1/(0.08+0.3j);
+y34=-1/(0.08+0.3j);
+y35=0; 
+y36=0;
+y41=y14;
+y42=y24;
+y43=y34;
+y44=0.25j+1/(0.08+0.3j)+1/(0.1+0.35j);
+y45=-1/(0.1+0.35j);
+y46=0;
+y51=y15;
+y52=y25;
+y53=y35;
+y54=y45;	
+y55=0.25j+1/(0.1+0.35j)+1/(0.04+0.25j)+1/((1.05^2)*0.015j);
+y56=-1/(1.05*0.015j);
+y61=0;
+y62=0;y63=0;y64=0;
+y65=y56;
+y66=1/0.015j; 
+YB=[y11 y12 y13 y14 y15 y16; y21 y22 y23 y24 y25 y26;y31 y32 y33 y34 y35 y36; y41 y42 y43 y44 y45 y46;y51 y52 y53 y54 y55 y56;y61 y62 y63 y64 y65 y66]; 
+E(2)=1.00;E(3)=1.00;E(4)=1.00;E(5)=1.00;E(6)=1.1;
+F(2)=0;F(3)=0;F(4)=0;F(5)=0; F(6)=0; 
+G=real(YB);B=imag(YB); 
+S(2)=-2-1j;S(3)=-1.8-0.4j;S(4)=-1.6-0.8j;S(5)=-3.7-1.3j; 
+S(6)=5; P=real(S);Q=imag(S); 
+k=0;precision=0.1;  
+N1=5; 
+while precision > 0.00001
+    E(1)=1.1;F(1)=0;
+    for m=2:N1+1
+        for n=1:N1+1
+            Pt(n)=(E(m)*(G(m,n)*E(n)-B(m,n)*F(n))+F(m)*(G(m,n)*F(n)+B(m,n)*E(n)));
+            Qt(n)=(F(m)*(G(m,n)*E(n)-B(m,n)*F(n))-E(m)*(G(m,n)*F(n)+B(m,n)*E(n)));        end
+        dP(m)=P(m)-sum(Pt);
+        dQ(m)=Q(m)-sum(Qt); 
+	end
+
+	for m=2:N1+1
+        for n=1:N1+1 
+	            Ai(n)=G(m,n)*E(n)-B(m,n)*F(n); 
+                Bi(n)=G(m,n)*F(n)+B(m,n)*E(n);
+        end
+        N(m,m)=sum(Ai)+G(m,m)*E(m)+B(m,m)*F(m);
+        H(m,m)=sum(Bi)-B(m,m)*E(m)+G(m,m)*F(m);
+        L(m,m)= -sum(Bi)-B(m,m)*E(m)+G(m,m)*F(m);
+        J(m,m)= sum(Ai)-G(m,m)*E(m)-B(m,m)*F(m);
+    end
+
+for m=2:N1+1
+        JJ(2*m-3,2*m-3)=N (m,m);
+        JJ(2*m-3,2*m-2)=H(m,m);
+        JJ(2*m-2,2*m-3)=L(m,m);
+        JJ(2*m-2,2*m-2)=J(m,m);
+end 
+for m=2:N1+1
+        for n=2:N1+1
+            if m==n
+            else
+                N(m,n)=G(m,n)*E(m)+B(m,n)*F(m); 
+                H(m,n)=-B(m,n)*E(m)+G(m,n)*F(m); 
+                L(m,n)=-B(m,n)*E(m)+G(m,n)*F(m); 
+                J(m,n)=-B(m,n)*F(m)-G(m,n)*E(m);
+                JJ(2*m-3,2*n-3)=N(m,n);
+                JJ(2*m-3,2*n-2)=H(m,n);
+                JJ(2*m-2,2*n-3)=L(m,n);
+                JJ(2*m-2,2*n-2)=J(m,n);
+            end
+        end
+    end
+for i=1:8
+    JJ(10,i)=0;
+end
+JJ(10,9)=2*E(6); 
+JJ(10,10)=2*F(6);
+for m=1:N1
+    PQ(2*m-1)=dP(m+1);  
+    PQ(2*m)=dQ(m+1);
+end
+PQ(10)=1.1^2-(E(6)^2+F(6)^2);
+dU=inv(JJ)*PQ';
+precision=max(abs(PQ)); 
+ for n=1:N1
+    E(n+1)=E(n+1)+dU(2*n-1);
+    F(n+1)=F(n+1)+dU(2*n);  
+ end
+for n=1:N1+1
+        U(n)=E(n)+(F(n))*j; 
+end
+k=k+1;
+time=k,U
+if k>9;
+break
+end
+end
+for m=1:N1+1
+   I(m)=YB(1,m)*U(m); 
+end
+S1=U(1)*sum(conj(I)); 
+y10=0.05/(1.05*0.03j);
+y20=-0.05/((1.05^2)*0.03j)+0.5j;
+y30=0.5j;
+y40=0.25j;
+y50=0.25j-0.05/((1.05^2)*0.015j);
+y60=0.05/(1.05*0.015j);
+Y=[y10 y20 y30 y40 y50 y60]; 
+for m=1:6
+for n=1:6
+   if m==n 
+   S(m,n)=0; 
+     else 
+    S(m,n)=U(m)*( conj(U(m)*Y(m))+( conj(U(m))- conj(U(n)))* conj(-YB(m,n)));  end
+end
+end
+S1
+S
